@@ -21,3 +21,9 @@ Build:
     - may require reducing flash baudrate in case of failure
 - Zephyr:
     - check dedicated [README.md](esp32/zephyr/README.md)
+
+
+Demo:
+
+<img src=res/PXL_20261028_082601478.jpg width="400">
+<img src=res/PXL_20261028_082614191.jpg width="400">
