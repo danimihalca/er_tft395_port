@@ -1,0 +1,15 @@
+# ER-TFT3.95-1 display driver port
+
+Model: https://www.buydisplay.com/square-3-95-inch-720x720-ips-tft-lcd-display-rgb-interface
+
+Reference:
+
+    - LT7680 controller
+    - NV3052C controller
+    - GT911 touch controller
+
+## ESP32 WROOM32 DevKitC
+
+Original code: https://www.buydisplay.com/download/ESP32/ER-TFT3.95-1_ESP32_Tutorial.zip
+
+Wiring: same as in the original demo, plus D26 for blacklight
