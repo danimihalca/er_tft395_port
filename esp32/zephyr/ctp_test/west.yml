@@ -1,0 +1,18 @@
+manifest:
+
+  defaults:
+    remote: zephyrproject
+
+  remotes:
+    - name: zephyrproject
+      url-base: https://github.com/zephyrproject-rtos
+
+  projects:
+    - name: zephyr
+      path: zephyr
+      revision: v4.5.0-rc1
+      import:
+        # By using name-allowlist we can clone only the modules that are
+        # strictly needed by the application.
+        name-allowlist:
+          - hal_espressif

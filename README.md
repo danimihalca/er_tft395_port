@@ -13,3 +13,11 @@ Reference:
 Original code: https://www.buydisplay.com/download/ESP32/ER-TFT3.95-1_ESP32_Tutorial.zip
 
 Wiring: same as in the original demo, plus D26 for blacklight
+
+Build:
+
+- original:
+    - via **ArduinoIDE** with **esp32** board package, set for ESP32 Dev Module
+    - may require reducing flash baudrate in case of failure
+- Zephyr:
+    - check dedicated [README.md](esp32/zephyr/README.md)

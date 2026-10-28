@@ -1,0 +1,85 @@
+/*
+ * ER-TFT3.95-1 (LT7680 + 720x720 RGB panel) on ESP32-WROOM-32 DevKitC
+ * Values taken from the EastRising ESP32 tutorial (Display_DMA_Cartoon_Font_test: LCD.h, LCD.cpp, .ino).
+ *
+ * Wiring (from the tutorial):
+ *   LT7680 SPI : CS=GPIO5  MISO=GPIO19  MOSI=GPIO23  SCK=GPIO18  RES=GPIO16
+ *   Panel init : CS=GPIO14  SDI=GPIO12  SCK=GPIO13   (separate 9-bit SPI, see note at bottom)
+ *
+ * Build (from the project root):
+ *   west build -b esp32_devkitc/esp32/procpu .
+ */
+
+#include <zephyr/dt-bindings/gpio/gpio.h>
+#include <zephyr/dt-bindings/spi/spi.h>
+
+&pinctrl {
+	spim3_default: spim3_default {
+		group1 {
+			pinmux = <SPIM3_SCLK_GPIO18>,
+				 <SPIM3_MISO_GPIO19>,
+				 <SPIM3_MOSI_GPIO23>;
+		};
+		group2 {
+			pinmux = <SPIM3_CSEL_GPIO5>;
+			output-high;
+		};
+	};
+};
+
+&spi3 {
+	status = "okay";
+	pinctrl-0 = <&spim3_default>;
+	pinctrl-names = "default";
+
+	lt7680: lt7680@0 {
+		compatible = "levetop,lt7680";
+		zephyr,deferred-init;
+		reg = <0>;
+		spi-max-frequency = <20000000>;     /* tutorial: SPISettings(20000000, MSBFIRST, SPI_MODE0) */
+
+		width = <720>;                      /* LCD_XSIZE_TFT */
+		height = <720>;                     /* LCD_YSIZE_TFT */
+		x-offset = <0>;
+		y-offset = <0>;
+		reset-gpios = <&gpio0 16 GPIO_ACTIVE_LOW>;   /* LCM_RESET = 16 */
+		reset-delay-ms = <100>;
+		rotation = <0>;
+
+		/*
+		 * Panel timing from LCD.h. The driver also checks that the
+		 * "clock-frequency" it is given is the 10 MHz crystal (OSC_FREQ 10 in
+		 * the tutorial). UNVERIFIED: I could not read how the driver binds
+		 * these (child node vs. properties on the lt7680 node). If the build
+		 * complains, check drivers/display/display_lt7680.c in your tree and
+		 * move these properties to wherever it reads them.
+		 */
+		display-timings {
+			compatible = "zephyr,panel-timing";
+			clock-frequency = <10000000>;
+			hsync-len = <5>;       /* LCD_HSPW */
+			hfront-porch = <15>;   /* LCD_HFPD */
+			hback-porch = <80>;    /* LCD_HBPD */
+			vsync-len = <5>;       /* LCD_VSPW */
+			vfront-porch = <15>;   /* LCD_VFPD */
+			vback-porch = <20>;    /* LCD_VBPD */
+			hsync-active = <0>;    /* LCD_HSYNC_Active_Polarity */
+			vsync-active = <0>;    /* LCD_VSYNC_Active_Polarity */
+			de-active = <1>;       /* LCD_DE_Active_Polarity */
+			pixelclk-active = <0>; /* LCD_PCLK_Falling_Rising = rising */
+		};
+	};
+};
+
+/ {
+	chosen {
+		zephyr,display = &lt7680;
+	};
+};
+
+/*
+ * NOTE: the tutorial's LCD_init.h (nv3052_Initial, ~158 command/data pairs for the
+ * NV3052 panel controller) is sent over a bit-banged 9-bit SPI (CS=14, SDI=12, SCK=13) before the
+ * LT7680 output is useful. The upstream Zephyr driver does not do this, so
+ * the app must replay that sequence (e.g. a small GPIO bit-bang routine) at boot.
+ */

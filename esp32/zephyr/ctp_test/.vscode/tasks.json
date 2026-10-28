@@ -1,0 +1,75 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "CMake Configure only",
+            "type": "shell",
+            "command": "west",
+            "args": [
+                "build",
+                "-b", "esp32_devkitc/esp32/procpu",
+                "-p",
+                "--cmake-only"
+            ],
+            "dependsOn": "Zephyr: Clean Build Folder",
+            "dependsOrder": "sequence"
+        },
+        {
+            "label": "Build",
+            "type": "shell",
+            "command": "west",
+            "args": [
+                "build",
+                "-b", "esp32_devkitc/esp32/procpu",
+                "-p"
+            ],
+            "dependsOn": "Zephyr: Clean Build Folder",
+            "dependsOrder": "sequence"
+        },
+        {
+            "label": "Flash",
+            "type": "shell",
+            "command": "west",
+            "args": [
+                "flash",
+                "--",
+                "--esp-device", "${input:serialPort}"
+            ]
+        },
+        {
+            "label": "Flash Erase",
+            "type": "shell",
+            "command": "esptool",
+            "args": [
+                "--chip", "esp32",
+                "--port", "${input:serialPort}",
+                "erase-flash"
+            ]
+        },
+        {
+            "label": "Serial",
+            "type": "shell",
+            "command": "minicom",
+            "args": [
+                "-D", "${input:serialPort}"
+            ]
+        },
+        {
+            "label": "Zephyr: Clean Build Folder",
+            "type": "shell",
+            "command": "rm",
+            "args": [
+                "-rf",
+                "build"
+            ]
+        }
+    ],
+    "inputs": [
+        {
+            "id": "serialPort",
+            "type": "promptString",
+            "description": "ESP32 serial port (e.g. COM3 or /dev/ttyUSB0)"
+            ,"default": "/dev/ttyUSB0"
+        }
+    ]
+}
