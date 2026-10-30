@@ -27,3 +27,12 @@ Demo:
 
 <img src=res/PXL_20261028_082601478.jpg width="400">
 <img src=res/PXL_20261028_082614191.jpg width="400">
+
+## Raspberry PI
+
+DRM KMS for RaspberryPi OS: [README.md](rpi/drm_kms_driver/README.md)
+
+Demo: 
+
+<img src=res/PXL_20261030_181249473.jpg width="400">
+

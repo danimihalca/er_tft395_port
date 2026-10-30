@@ -1,0 +1,84 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Raspberry Pi overlay: EastRising ER-TFT3.95-1 (LT7680 + NV3052, 720x720) on SPI0, CE0.
+ *
+ * Wiring (display connector pin -> Pi BCM GPIO / header pin):
+ *   5  CS    -> GPIO8  (CE0)  pin 24
+ *   6  MISO  -> GPIO9         pin 21
+ *   7  MOSI  -> GPIO10        pin 19
+ *   8  SCK   -> GPIO11        pin 23
+ *   9  BL    -> 3.3V          (tutorial: HIGH = on)
+ *   11 RES   -> GPIO25        pin 22   (param: reset)
+ *   16 CS    -> GPIO5         pin 29   (param: pcs)   panel init bus
+ *   18 SDI   -> GPIO13        pin 33   (param: psdi)
+ *   19 SCK   -> GPIO6         pin 31   (param: psck)
+ *   1,2 GND, 3,4 VCC (3.3V or 5V, depending on the module you bought)
+ *
+ * config.txt:  dtoverlay=er-tft395
+ *              dtoverlay=er-tft395,speed=16000000,reset=25   (parameters, optional)
+ */
+/dts-v1/;
+/plugin/;
+
+/ {
+	compatible = "brcm,bcm2835";
+
+	fragment@0 {
+		target = <&spi0>;
+		__overlay__ {
+			status = "okay";
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			lt_display: display@0 {
+				compatible = "eastrising,er-tft3.95-1", "levetop,lt7680";
+				reg = <0>;
+				spi-max-frequency = <20000000>;
+
+				reset-gpios = <&gpio 25 1>;		/* active low */
+				panel-cs-gpios = <&gpio 5 1>;		/* active low */
+				panel-sck-gpios = <&gpio 6 0>;
+				panel-sdi-gpios = <&gpio 13 0>;
+				/* If BL is wired to a GPIO instead of 3.3V, add e.g.:
+				 *   backlight-gpios = <&gpio 12 0>;
+				 */
+
+				width-mm = <70>;		/* approximate */
+				height-mm = <70>;
+
+				panel-timing {
+					/* from the tutorial's LCD.h; clock rounds to whole MHz */
+					clock-frequency = <36000000>;
+					hactive = <720>;
+					vactive = <720>;
+					hfront-porch = <15>;
+					hback-porch = <80>;
+					hsync-len = <5>;
+					vfront-porch = <15>;
+					vback-porch = <20>;
+					vsync-len = <5>;
+					hsync-active = <0>;
+					vsync-active = <0>;
+					de-active = <1>;
+					pixelclk-active = <0>;
+				};
+			};
+		};
+	};
+
+	/* free CE0 from spidev */
+	fragment@1 {
+		target = <&spidev0>;
+		__overlay__ {
+			status = "disabled";
+		};
+	};
+
+	__overrides__ {
+		speed = <&lt_display>, "spi-max-frequency:0";
+		reset = <&lt_display>, "reset-gpios:4";
+		pcs   = <&lt_display>, "panel-cs-gpios:4";
+		psck  = <&lt_display>, "panel-sck-gpios:4";
+		psdi  = <&lt_display>, "panel-sdi-gpios:4";
+	};
+};
